@@ -1,8 +1,8 @@
-#include <FastLED.h>
+#include <FastLED.h> // Install 'FastLED' by Daniel Garcia
 #include <Wire.h>
-#include <RTClib.h>
+#include <RTClib.h> // Install 'RTClib' by Adafruit
 
-#define DIGITS 2
+#define DIGITS 5
 #define NUM_LEDS (DIGITS * 7 * 5)
 
 #define DATA_PIN 3

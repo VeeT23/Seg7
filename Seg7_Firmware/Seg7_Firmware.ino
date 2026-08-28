@@ -12,7 +12,7 @@ RTC_DS3231 rtc;
 char inputLine[40];
 uint8_t inputPos = 0;
 unsigned long lastUpdate = 0;
-const unsigned long updateInterval = 500; // 500 ms
+const unsigned long updateInterval = 250; // 500 ms
 
 DateTime now;
 
@@ -85,7 +85,7 @@ void loop() {
     }
   }
 
-  // ---- 500ms timed update ----
+  // ---- timed update ----
   if (millis() - lastUpdate >= updateInterval) {
     lastUpdate = millis();
 

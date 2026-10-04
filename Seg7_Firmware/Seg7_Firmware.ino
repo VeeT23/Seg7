@@ -58,7 +58,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   delay(500);
-  Serial.println("Nano Ready!");
+  Serial.println("Hello World from Arduino!");
 
   if (!rtc.begin()) {
     Serial.println("RTC not found");

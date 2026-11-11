@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
-constexpr uint8_t DATA_PIN = 12;
+constexpr uint8_t DATA_PIN = 33;
 
 constexpr uint8_t DIGITS = 4;
 constexpr uint8_t NUM_LEDS = 35 * DIGITS;
@@ -49,9 +49,7 @@ void setup()
 {
     Serial.begin(115200);
 
-    FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
-
-    
+    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
 }
 
 void loop()

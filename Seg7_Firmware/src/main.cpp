@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <RTClib.h>
-#include <string>
-#include <vector>
 #include "display.hpp"
 #include "engine.hpp"
 #include "router.hpp"
@@ -45,13 +43,10 @@ void setup()
 
 void loop()
 {
-  while (router.has_data())
-  {
-    std::string data = router.get_data();
-    std::vector<std::string> reply = engine.handle_incoming_data(data);
-    for (const std::string &line : reply)
-    {
-      router.println(Router::BroadcastType::STATUS, line);
-    }
-  }
+  if (router.has_data())
+    engine.pump_input(router.get_data());
+
+  engine.update();
+
+  engine.drain_output(router);
 }

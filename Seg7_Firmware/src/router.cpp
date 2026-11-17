@@ -34,52 +34,40 @@ bool Router::has_data()
     return Serial.available() > 0 || bluetooth.available() > 0;
 }
 
-std::string Router::get_data()
+std::vector<std::string> Router::get_data()
 {
-    // Prefer USB Serial if it has a complete line
-    while (Serial.available() > 0)
+    std::vector<std::string> results;
+
+    auto read_lines = [&results](auto &port, std::string &buffer)
     {
-        char c = Serial.read();
-
-        if (c == '\n')
+        while (port.available() > 0)
         {
-            std::string result = serial_buffer;
-            serial_buffer.clear();
+            char c = port.read();
 
-            // Remove trailing carriage return (\r)
-            if (!result.empty() && result.back() == '\r')
+            if (c == '\n')
             {
-                result.pop_back();
+                if (!buffer.empty() && buffer.back() == '\r')
+                {
+                    buffer.pop_back();
+                }
+
+                results.push_back(buffer);
+                buffer.clear();
             }
-
-            return result;
-        }
-
-        serial_buffer += c;
-    }
-
-    // Check Bluetooth
-    while (bluetooth.available() > 0)
-    {
-        char c = bluetooth.read();
-
-        if (c == '\n')
-        {
-            std::string result = bluetooth_buffer;
-            bluetooth_buffer.clear();
-
-            if (!result.empty() && result.back() == '\r')
+            else
             {
-                result.pop_back();
+                buffer += c;
             }
-
-            return result;
         }
+    };
 
-        bluetooth_buffer += c;
-    }
+    // Read USB Serial
+    read_lines(Serial, serial_buffer);
 
-    return "";
+    // Read Bluetooth
+    read_lines(bluetooth, bluetooth_buffer);
+
+    return results;
 }
 
 bool Router::bluetooth_connected()

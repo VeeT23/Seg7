@@ -25,10 +25,10 @@ public:
     void print(const BroadcastType type, const std::string &message);
 
     bool has_data();
-    std::string get_data();
+    std::vector<std::string> get_data();
     
     bool bluetooth_connected();
-    
+
 private:
     BluetoothSerial bluetooth;
 

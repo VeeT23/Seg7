@@ -1,22 +1,33 @@
 #include <Arduino.h>
 #include <Wire.h>
-
-#include "display.hpp"
 #include <RTClib.h>
+#include <string>
+#include <vector>
+#include "display.hpp"
+#include "engine.hpp"
+#include "router.hpp"
 
 constexpr uint8_t SDA_PIN = 25;
 constexpr uint8_t SCL_PIN = 26;
 
 constexpr uint8_t LED_PIN = 33;
 
+Router router;
+
 RTC_DS3231 rtc;
 
 Display display(500);
 
+Engine engine;
 
 void setup()
 {
-  Serial.begin(115200);
+  router.begin_serial(115200);
+  router.begin_bluetooth("ESP32");
+  delay(200);
+
+  router.println("STATUS: Starting controller...");
+
   display.begin<LED_PIN>();
 
   Wire.begin(SDA_PIN, SCL_PIN);
@@ -24,35 +35,23 @@ void setup()
 
   if (!rtc.begin())
   {
-    Serial.println("Couldn't find DS3231!");
+    router.println("ERROR: Couldn't find DS3231!");
   }
   else
   {
-    Serial.println("DS3231 detected!");
+    router.println("STATUS: Detected DS3231");
   }
-
-  PanelID id = display.add_panel(Panel::PanelType::SegmentPanel);
-  SegmentPanel& segment =
-    static_cast<SegmentPanel&>(display.get_panel(id));
-  segment.set_digit(5);
-
-  display.get_matrix().fill(CRGB::Red);
-  display.show();
-  delay(350);
-  display.get_matrix().fill(CRGB::Green);
-  display.show();
-  delay(350);
-  display.get_matrix().fill(CRGB::Blue);
-  display.show();
-  delay(350);
-
-  display.get_matrix().fill(CRGB::Red);
-  display.show();
 }
 
 void loop()
 {
-  DateTime current_time = rtc.now();
- 
-  delay(500);
+  while (router.has_data())
+  {
+    std::string data = router.get_data();
+    std::vector<std::string> reply = engine.handle_incoming_data(data);
+    for (const std::string &line : reply)
+    {
+      router.println(line);
+    }
+  }
 }

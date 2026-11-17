@@ -26,7 +26,7 @@ void setup()
   router.begin_bluetooth("ESP32");
   delay(200);
 
-  router.println("STATUS: Starting controller...");
+  router.println(Router::BroadcastType::STATUS, "Starting controller...");
 
   display.begin<LED_PIN>();
 
@@ -35,11 +35,11 @@ void setup()
 
   if (!rtc.begin())
   {
-    router.println("ERROR: Couldn't find DS3231!");
+    router.println(Router::BroadcastType::ERROR, "Couldn't find DS3231!");
   }
   else
   {
-    router.println("STATUS: Detected DS3231");
+    router.println(Router::BroadcastType::STATUS, "Detected DS3231");
   }
 }
 
@@ -51,7 +51,7 @@ void loop()
     std::vector<std::string> reply = engine.handle_incoming_data(data);
     for (const std::string &line : reply)
     {
-      router.println(line);
+      router.println(Router::BroadcastType::STATUS, line);
     }
   }
 }

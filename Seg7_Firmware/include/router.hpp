@@ -7,94 +7,34 @@
 
 class Router
 {
+public:
+    enum class BroadcastType : uint8_t
+    {
+        STATUS = 0,
+        WARNING = 1,
+        ERROR = 2,
+        PROG_OUT = 3
+    };
+
+    Router() {}
+
+    void begin_serial(unsigned long baudrate = 115200);
+    void begin_bluetooth(String device_name);
+
+    void println(const BroadcastType type, const std::string &message);
+    void print(const BroadcastType type, const std::string &message);
+
+    bool has_data();
+    std::string get_data();
+    
+    bool bluetooth_connected();
+    
 private:
     BluetoothSerial bluetooth;
 
     std::string serial_buffer;
     std::string bluetooth_buffer;
 
-public:
-    Router() {}
+    std::string get_message_prefix(const BroadcastType type);
 
-    void begin_serial(unsigned long baudrate = 115200)
-    {
-        Serial.begin(baudrate);
-    }
-
-    void begin_bluetooth(String device_name)
-    {
-        bluetooth.begin(device_name);
-    }
-
-    void println(const std::string &message)
-    {
-        Serial.println(message.c_str());
-        bluetooth.println(message.c_str());
-    }
-
-    void print(const std::string &message)
-    {
-        Serial.print(message.c_str());
-        bluetooth.print(message.c_str());
-    }
-
-    bool has_data()
-    {
-        return Serial.available() > 0 || bluetooth.available() > 0;
-    }
-
-    std::string get_data()
-    {
-        // Prefer USB Serial if it has a complete line
-        while (Serial.available() > 0)
-        {
-            char c = Serial.read();
-
-            if (c == '\n')
-            {
-                std::string result = serial_buffer;
-                serial_buffer.clear();
-
-                // Remove trailing carriage return (\r)
-                if (!result.empty() && result.back() == '\r')
-                {
-                    result.pop_back();
-                }
-
-                return result;
-            }
-
-            serial_buffer += c;
-        }
-
-        
-
-        // Check Bluetooth
-        while (bluetooth.available() > 0)
-        {
-            char c = bluetooth.read();
-
-            if (c == '\n')
-            {
-                std::string result = bluetooth_buffer;
-                bluetooth_buffer.clear();
-
-                if (!result.empty() && result.back() == '\r')
-                {
-                    result.pop_back();
-                }
-
-                return result;
-            }
-
-            bluetooth_buffer += c;
-        }
-
-        return "";
-    }
-
-    bool bluetooth_connected()
-    {
-        return bluetooth.hasClient();
-    }
 };

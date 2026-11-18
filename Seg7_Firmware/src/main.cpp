@@ -39,6 +39,8 @@ void setup()
   {
     router.println(Router::BroadcastType::STATUS, "Detected DS3231");
   }
+
+  engine.set_clock(rtc);
 }
 
 void loop()

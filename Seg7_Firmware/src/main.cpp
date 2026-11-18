@@ -16,7 +16,7 @@ RTC_DS3231 rtc;
 
 Display display(500);
 
-Engine engine;
+Engine engine(rtc);
 
 void setup()
 {

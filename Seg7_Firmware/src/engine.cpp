@@ -61,10 +61,58 @@ void Engine::handle_set(const std::string &command, const std::string &args)
 {
     if (command == "TIME")
     {
+        int year, month, day, hour, minute, second;
+        char extra;
+
+        // Validate argument format and reject trailing characters.
+        if (sscanf(args.c_str(), "%d-%d-%d %d:%d:%d %c",
+                   &year, &month, &day,
+                   &hour, &minute, &second, &extra) != 6)
+        {
+            post_message(Router::BroadcastType::ERROR,
+                         "Invalid time format. Expected: YYYY-MM-DD HH:MM:SS");
+            return;
+        }
+
+        // Validate date and time ranges.
+        if (year < 2000 || year > 2099 ||
+            month < 1 || month > 12 ||
+            day < 1 || day > 31 ||
+            hour < 0 || hour > 23 ||
+            minute < 0 || minute > 59 ||
+            second < 0 || second > 59)
+        {
+            post_message(Router::BroadcastType::ERROR,
+                         "Invalid date or time values");
+            return;
+        }
+
+        // Validate the actual calendar date.
+        DateTime dt(year, month, day, hour, minute, second);
+
+        if (!dt.isValid())
+        {
+            post_message(Router::BroadcastType::ERROR,
+                         "Invalid calendar date");
+            return;
+        }
+
+        // Apply RTC update.
+        rtc.adjust(dt);
+
+        // Report success.
+        char buffer[32];
+        snprintf(buffer, sizeof(buffer),
+                 "%04d-%02d-%02d %02d:%02d:%02d",
+                 year, month, day, hour, minute, second);
+
+        post_message(Router::BroadcastType::STATUS,
+                     "Set time to: " + std::string(buffer));
     }
     else
     {
-        post_message(Router::BroadcastType::ERROR, "Unknown set command: " + command);
+        post_message(Router::BroadcastType::ERROR,
+                     "Unknown set command: " + command);
     }
 }
 
@@ -72,7 +120,20 @@ void Engine::handle_get(const std::string &command, const std::string &args)
 {
     if (command == "TIME")
     {
-        post_message(Router::BroadcastType::STATUS, "TIME: " + rtc.now().timestamp());
+        DateTime now = rtc.now();
+
+        char dateTimeStr[20];
+        snprintf(dateTimeStr, sizeof(dateTimeStr),
+                 "%04d-%02d-%02d %02d:%02d:%02d",
+                 now.year(),
+                 now.month(),
+                 now.day(),
+                 now.hour(),
+                 now.minute(),
+                 now.second());
+
+        post_message(Router::BroadcastType::STATUS,
+                     std::string("TIME: ") + dateTimeStr);
     }
     else
     {

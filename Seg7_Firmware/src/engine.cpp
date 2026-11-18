@@ -43,7 +43,11 @@ void Engine::handle_data(const std::string &data)
     std::string args;
     std::getline(stream >> std::ws, args);
 
-    if (action == "SET")
+    if (action == "PING")
+    {
+        post_message(Router::BroadcastType::NONE, "PONG");
+    }
+    else if (action == "SET")
     {
         handle_set(command, args);
     }
